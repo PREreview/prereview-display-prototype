@@ -1,0 +1,13 @@
+{
+  "name": "orcid-ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "orcid-utils": "^1.2.0",
+    "url-ts": "*"
+  },
+  "peerDependencies": {
+    "fp-ts": "^2.11.8",
+    "io-ts": "^2.2.16"
+  }
+}

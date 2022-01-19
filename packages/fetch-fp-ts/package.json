@@ -1,0 +1,11 @@
+{
+  "name": "fetch-fp-ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "cross-fetch": "^3.1.4"
+  },
+  "peerDependencies": {
+    "fp-ts": "^2.11.8"
+  }
+}

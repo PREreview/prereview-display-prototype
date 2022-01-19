@@ -1,0 +1,9 @@
+{
+  "name": "url-ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "peerDependencies": {
+    "fp-ts": "^2.11.8",
+    "io-ts": "^2.2.16"
+  }
+}

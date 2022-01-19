@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@godaddy/terminus": "^4.10.1",
+    "cls-rtracer": "^2.6.0",
+    "doi-ts": "*",
+    "dotenv": "^14.2.0",
+    "express": "^4.17.2",
+    "fetch-fp-ts": "*",
+    "fp-ts": "^2.11.8",
+    "fp-ts-routing": "^0.5.4",
+    "fp-ts-std": "^0.13.1",
+    "http-errors": "^1.8.1",
+    "http-methods-ts": "*",
+    "hyper-ts": "^0.7.6",
+    "hyper-ts-routing": "*",
+    "io-ts": "^2.2.16",
+    "logger-ts": "*",
+    "orcid-ts": "*",
+    "ts-pattern": "^3.3.4",
+    "url-ts": "*"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^3.1.1",
+    "@types/express": "^4.17.13",
+    "@types/http-errors": "^1.8.2",
+    "@types/node": "^16.11.19",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "scripts": {
+    "format": "prettier --ignore-unknown --write '**'",
+    "start": "nodemon src/index.ts"
+  }
+}

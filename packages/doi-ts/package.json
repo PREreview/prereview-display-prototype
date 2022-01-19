@@ -1,0 +1,16 @@
+{
+  "name": "doi-ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "doi-regex": "^0.1.11",
+    "url-ts": "*"
+  },
+  "peerDependencies": {
+    "fp-ts": "^2.11.8",
+    "io-ts": "^2.2.16"
+  },
+  "devDependencies": {
+    "@types/doi-regex": "^0.1.0"
+  }
+}
