@@ -1,5 +1,6 @@
 import { Doi, DoiC } from 'doi-ts'
 import * as R from 'fp-ts-routing'
+import * as M from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import { pipe, tuple } from 'fp-ts/function'
 import * as c from 'io-ts/Codec'
@@ -44,8 +45,6 @@ class PublishReview {
   constructor(readonly doi: Doi) {}
 }
 
-type Location = Home | Preprint | Review | PublishReview
-
 export const homeMatch = R.end
 
 export const preprintMatch = pipe(R.lit('preprints'), R.then(type('doi', DoiC)), R.then(R.end))
@@ -64,29 +63,23 @@ export const reviewMatch = pipe(
 )
 
 export const router = pipe(
-  R.zero<Location>(),
-  R.alt<Location>(() =>
+  [
     pipe(
       homeMatch.parser,
       R.map(() => new Home()),
     ),
-  ),
-  R.alt<Location>(() =>
     pipe(
       preprintMatch.parser,
       R.map(params => new Preprint(params.doi)),
     ),
-  ),
-  R.alt<Location>(() =>
     pipe(
       reviewMatch.parser,
       R.map(params => new Review(params.id)),
     ),
-  ),
-  R.alt<Location>(() =>
     pipe(
       publishReviewMatch.parser,
       R.map(params => new PublishReview(params.doi)),
     ),
-  ),
+  ],
+  M.concatAll(R.getParserMonoid()),
 )
