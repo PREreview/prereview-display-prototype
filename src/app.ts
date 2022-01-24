@@ -24,4 +24,4 @@ const routerMiddleware = pipe(
   ),
 )
 
-export const appMiddleware = pipe(routerMiddleware, RM.orElseW(flow(handleError, RM.fromMiddleware)))
+export const appMiddleware = pipe(routerMiddleware, RM.orElseMiddlewareK(handleError))

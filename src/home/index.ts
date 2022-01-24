@@ -38,8 +38,7 @@ const sendPage = flow(createPage, M.send)
 
 export const home = pipe(
   fetchDetails,
-  RTE.rightReaderTask,
-  RM.fromReaderTaskEither,
+  RM.rightReaderTask,
   RM.ichainFirst(() => RM.status(Status.OK)),
   RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
   RM.ichainFirst(() => RM.closeHeaders()),

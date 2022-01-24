@@ -15,7 +15,7 @@
     "fp-ts-std": "^0.13.1",
     "http-errors": "^1.8.1",
     "http-methods-ts": "*",
-    "hyper-ts": "^0.7.6",
+    "hyper-ts": "^0.7.7",
     "hyper-ts-routing": "*",
     "io-ts": "^2.2.16",
     "logger-ts": "*",

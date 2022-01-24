@@ -98,11 +98,7 @@ const onMethod = (doi: Doi) => (method: Method) =>
     .otherwise(() => publishReviewForm(doi))
 
 export const publishReview = (doi: Doi) =>
-  pipe(
-    RM.decodeMethod(parse(constant(new BadRequest()))),
-    RM.ichainW(onMethod(doi)),
-    RM.orElseW(flow(handleError, RM.fromMiddleware)),
-  )
+  pipe(RM.decodeMethod(parse(constant(new BadRequest()))), RM.ichainW(onMethod(doi)), RM.orElseMiddlewareK(handleError))
 
 export const publishReviewForm = (doi: Doi) =>
   pipe(
@@ -114,7 +110,7 @@ export const publishReviewForm = (doi: Doi) =>
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),
     RM.ichainMiddlewareKW(flow(createPage, M.send)),
-    RM.orElseW(flow(ServiceUnavailable, RM.fromMiddleware)),
+    RM.orElseMiddlewareK(ServiceUnavailable),
   )
 
 export const publishReviewErrorForm = (doi: Doi) => (errors: d.DecodeError) =>
@@ -127,7 +123,7 @@ export const publishReviewErrorForm = (doi: Doi) => (errors: d.DecodeError) =>
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),
     RM.ichainMiddlewareKW(flow(createPage, M.send)),
-    RM.orElseW(flow(ServiceUnavailable, RM.fromMiddleware)),
+    RM.orElseMiddlewareK(ServiceUnavailable),
   )
 
 const goAndPublish = flow(
@@ -137,7 +133,7 @@ const goAndPublish = flow(
   RM.ichainW(RM.redirect),
   RM.ichain(() => RM.closeHeaders()),
   RM.ichain(() => RM.end()),
-  RM.orElseW(flow(handleError, RM.fromMiddleware)),
+  RM.orElseMiddlewareK(handleError),
 )
 
 export const handlePublishReview = (doi: Doi) =>

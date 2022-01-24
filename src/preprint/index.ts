@@ -24,7 +24,7 @@ export const preprint = (doi: doi.Doi) =>
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),
     RM.ichainMiddlewareKW(sendPage),
-    RM.orElseW(flow(ServiceUnavailable, RM.fromMiddleware)),
+    RM.orElseMiddlewareK(ServiceUnavailable),
   )
 
 type Details = {
