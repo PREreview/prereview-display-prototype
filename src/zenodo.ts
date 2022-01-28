@@ -1,5 +1,15 @@
 import { Doi, DoiC, DoiD } from 'doi-ts'
-import { FetchEnv, ensureSuccess } from 'fetch-fp-ts'
+import {
+  FetchEnv,
+  Request,
+  ensureSuccess,
+  getRequest,
+  postRequest,
+  putRequest,
+  send,
+  withBody,
+  withHeader,
+} from 'fetch-fp-ts'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { constant, flow, pipe } from 'fp-ts/function'
 import { OrcidC, OrcidD } from 'orcid-ts'
@@ -116,29 +126,30 @@ export type SubmittedDeposition = d.TypeOf<typeof SubmittedDepositionD>
 export type ZenodoRecord = d.TypeOf<typeof ZenodoRecordD>
 type ZenodoRelatedIdentifier = c.TypeOf<typeof RelatedIdentifierC>
 
-const fetchFromZenodo = (init?: RequestInit) => (request: RequestInfo | URL) =>
+const fetchFromZenodo = (request: Request) =>
   pipe(
     RTE.ask<FetchEnv & ZenodoEnv>(),
-    RTE.chainTaskEitherK(({ fetch, zenodoApiKey }) =>
-      pipe(fetch(request, { ...init, headers: { ...init?.headers, Authorization: `Bearer ${zenodoApiKey}` } })),
-    ),
+    RTE.map(({ zenodoApiKey }) => pipe(request, withHeader('Authorization', `Bearer ${zenodoApiKey}`))),
+    RTE.chainW(send),
   )
 
 const getFileLink = (fileName: string) => (deposition: UnsubmittedDeposition) =>
-  `${deposition.links.bucket}/${fileName}`
+  new URL(fileName, `${deposition.links.bucket}/`)
 const getPublishLink = (deposition: UnsubmittedDeposition) => deposition.links.publish
-const recordUrl = (id: PositiveInt) => `https://sandbox.zenodo.org/api/records/${id}`
+const recordUrl = (id: PositiveInt) => new URL(id.toString(), 'https://sandbox.zenodo.org/api/records/')
 
 const fetchRecord = flow(
   recordUrl,
-  fetchFromZenodo(),
+  getRequest,
+  fetchFromZenodo,
   RTE.chainEitherKW(ensureSuccess),
   RTE.orElseFirstW(logError('Unable to fetch record from Zenodo')),
 )
 
 const search = flow(
   withQuery(`https://sandbox.zenodo.org/api/records/`),
-  fetchFromZenodo(),
+  getRequest,
+  fetchFromZenodo,
   RTE.chainEitherKW(ensureSuccess),
   RTE.orElseFirstW(logError('Unable to search Zenodo')),
 )
@@ -178,11 +189,9 @@ type File = {
 export const uploadFile = (file: File) =>
   flow(
     getFileLink(file.name),
-    fetchFromZenodo({
-      body: file.content,
-      headers: { 'Content-Type': file.type },
-      method: 'PUT',
-    }),
+    putRequest,
+    withBody(file.content, file.type),
+    fetchFromZenodo,
     RTE.chainEitherKW(ensureSuccess),
     RTE.orElseFirstW(logError('Unable to upload file to Zenodo')),
     RTE.mapLeft(constant(new Error('Unable to upload file to Zenodo'))),
@@ -190,7 +199,8 @@ export const uploadFile = (file: File) =>
 
 export const publishDeposition = flow(
   getPublishLink,
-  fetchFromZenodo({ method: 'POST' }),
+  postRequest,
+  fetchFromZenodo,
   RTE.chainEitherKW(ensureSuccess),
   RTE.orElseFirstW(logError('Unable to publish deposition on Zenodo')),
   RTE.chainW(decodeSubmittedDeposition),
@@ -199,12 +209,10 @@ export const publishDeposition = flow(
 
 export const createDeposition = (input: DepositMetadata) =>
   pipe(
-    'https://sandbox.zenodo.org/api/deposit/depositions',
-    fetchFromZenodo({
-      body: JSON.stringify({ metadata: DepositMetadataC.encode(input) }),
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-    }),
+    new URL('https://sandbox.zenodo.org/api/deposit/depositions'),
+    postRequest,
+    withBody(JSON.stringify({ metadata: DepositMetadataC.encode(input) }), 'application/json'),
+    fetchFromZenodo,
     RTE.chainEitherKW(ensureSuccess),
     RTE.orElseFirstW(logError('Unable to create deposition on Zenodo')),
     RTE.chainW(decodeUnsubmittedDeposition),

@@ -1,17 +1,21 @@
-import crossFetch, { Response } from 'cross-fetch'
+import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as TE from 'fp-ts/TaskEither'
+import { pipe } from 'fp-ts/function'
+import { Request } from './request'
 
 export type FetchEnv = {
-  fetch: Fetch
+  fetch: (input: string, init: RequestInit) => Promise<Response>
 }
-
-export type Fetch = (request: RequestInfo | URL, init?: RequestInit) => TE.TaskEither<NetworkError, Response>
 
 export class NetworkError extends Error {
   name!: 'NetworkError'
 }
 
-export const fetch: Fetch = TE.tryCatchK(crossFetch as any, toNetworkError)
+export const send: (request: Request) => RTE.ReaderTaskEither<FetchEnv, NetworkError, Response> = ([url, init]) =>
+  pipe(
+    RTE.ask<FetchEnv>(),
+    RTE.chainTaskEitherK(({ fetch }) => TE.tryCatch(() => fetch(url.href, init), toNetworkError)),
+  )
 
 function toNetworkError(error: unknown): NetworkError {
   if (error instanceof NetworkError) {

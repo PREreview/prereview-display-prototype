@@ -1,5 +1,5 @@
 import * as DOI from 'doi-ts'
-import { FetchEnv, ensureSuccess } from 'fetch-fp-ts'
+import { ensureSuccess, getRequest, send, withHeader } from 'fetch-fp-ts'
 import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
@@ -25,17 +25,14 @@ const CrossrefDoiDataD = pipe(CrossrefDoiD, D.map(normalizeCrossrefData))
 const DataciteDoiDataD = pipe(DataciteDoiD, D.map(normalizeDataciteData))
 const DoiDataD = D.union(CrossrefDoiDataD, DataciteDoiDataD)
 
-const fetchDoiResponse = (doi: DOI.Doi) =>
-  pipe(
-    RTE.ask<FetchEnv>(),
-    RTE.chainTaskEitherK(({ fetch }) =>
-      pipe(DOI.toUrl(doi), url =>
-        fetch(url, { headers: { accept: 'application/vnd.datacite.datacite+json, application/json' } }),
-      ),
-    ),
-    RTE.chainEitherKW(ensureSuccess),
-    RTE.orElseFirstW(logError('Unable to fetch DOI data')),
-  )
+const fetchDoiResponse = flow(
+  DOI.toUrl,
+  getRequest,
+  withHeader('Accept', 'application/vnd.datacite.datacite+json, application/json'),
+  send,
+  RTE.chainEitherKW(ensureSuccess),
+  RTE.orElseFirstW(logError('Unable to fetch DOI data')),
+)
 
 const decodeDoiJson = decode(DoiDataD, 'Unable to decode DOI JSON')
 

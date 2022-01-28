@@ -2,7 +2,7 @@ import { createTerminus } from '@godaddy/terminus'
 import rTracer from 'cls-rtracer'
 import 'dotenv/config'
 import express from 'express'
-import { FetchEnv, fetch } from 'fetch-fp-ts'
+import { FetchEnv } from 'fetch-fp-ts'
 import * as C from 'fp-ts/Console'
 import * as IO from 'fp-ts/IO'
 import * as IOE from 'fp-ts/IOEither'
@@ -12,6 +12,7 @@ import { absurd, constant, flow, pipe } from 'fp-ts/function'
 import http from 'http'
 import { toRequestHandler } from 'hyper-ts/lib/express'
 import * as l from 'logger-ts'
+import nodeFetch from 'node-fetch'
 import { appMiddleware } from './app'
 import * as d from './decoder'
 import { EnvD } from './env'
@@ -49,7 +50,7 @@ const env = pipe(
 )()
 
 const deps: AppEnv = {
-  fetch,
+  fetch: nodeFetch as any,
   logger: pipe(logger, l.withPayload(withRequestId)),
   zenodoApiKey: env.ZENODO_API_KEY,
 }
