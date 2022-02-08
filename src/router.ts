@@ -23,6 +23,15 @@ export function type<K extends string, A>(k: K, codec: c.Codec<string, string, A
   )
 }
 
+export function query<A>(codec: c.Codec<unknown, Record<string, R.QueryValues>, A>): R.Match<A> {
+  return new R.Match(
+    new R.Parser(r =>
+      O.Functor.map(O.fromEither(codec.decode(r.query)), query => tuple(query, new R.Route(r.parts, {}))),
+    ),
+    new R.Formatter((r, query) => new R.Route(r.parts, codec.encode(query))),
+  )
+}
+
 class Home {
   readonly _type = 'Home'
 }
@@ -45,6 +54,12 @@ class PublishReview {
   constructor(readonly doi: Doi) {}
 }
 
+class Search {
+  readonly _type = 'Search'
+
+  constructor(readonly query: string) {}
+}
+
 export const homeMatch = R.end
 
 export const preprintMatch = pipe(R.lit('preprints'), R.then(type('doi', DoiC)), R.then(R.end))
@@ -61,6 +76,8 @@ export const reviewMatch = pipe(
   R.then(type('id', pipe(NumberFromStringC, c.compose(PositiveIntC)))),
   R.then(R.end),
 )
+
+export const searchMatch = pipe(R.lit('search'), R.then(query(c.partial({ query: c.string }))), R.then(R.end))
 
 export const router = pipe(
   [
@@ -79,6 +96,10 @@ export const router = pipe(
     pipe(
       publishReviewMatch.parser,
       R.map(params => new PublishReview(params.doi)),
+    ),
+    pipe(
+      searchMatch.parser,
+      R.map(params => new Search(params.query ?? '')),
     ),
   ],
   M.concatAll(R.getParserMonoid()),

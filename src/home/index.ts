@@ -1,9 +1,11 @@
+import { format } from 'fp-ts-routing'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { flow, pipe } from 'fp-ts/function'
 import { MediaType, Status } from 'hyper-ts'
 import * as M from 'hyper-ts/lib/Middleware'
 import * as RM from 'hyper-ts/lib/ReaderMiddleware'
 import { page } from '../page'
+import { searchMatch } from '../router'
 import { maybeDisplayReviews } from './display-reviews'
 import { fetchDetails } from './fetch-details'
 
@@ -23,10 +25,16 @@ const createPage = flow(maybeDisplayReviews, reviews =>
 
   <hr class="col-3 col-md-2 mb-5">
   
-  <a href="https://sandbox.zenodo.org/deposit/new?c=prereview-test-community" class="btn btn-primary mb-5">
-    Add PREreview
-  </a>
-  
+  <form method="get" action="${format(searchMatch.formatter, {})}" class="row row-cols-lg-auto pb-5">
+    <div class="col-12">
+      <label class="visually-hidden" for="searchTerm">Search term</label>
+      <input type="text" class="form-control" id="searchTerm" name="query">
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Find a preprint</button>
+    </div>
+  </form>
+
   <div>${reviews}</div>
 
 </main>

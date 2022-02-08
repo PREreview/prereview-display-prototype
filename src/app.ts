@@ -9,6 +9,7 @@ import { preprint } from './preprint'
 import { publishReview } from './publish-review'
 import { review } from './review'
 import { router } from './router'
+import { search } from './search'
 
 const routerMiddleware = pipe(
   router,
@@ -20,6 +21,7 @@ const routerMiddleware = pipe(
       .with({ _type: 'Preprint' }, route => pipe(route.doi, preprint))
       .with({ _type: 'Review' }, route => pipe(route.id, review))
       .with({ _type: 'PublishReview' }, route => pipe(route.doi, publishReview))
+      .with({ _type: 'Search' }, route => pipe(route.query, search))
       .exhaustive(),
   ),
 )
