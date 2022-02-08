@@ -12,11 +12,16 @@ const DatePartsD = d.tuple(d.number, d.number, d.number)
 export const CrossrefDoiD = d.struct({
   abstract: d.optional(d.string),
   author: d.readonlyArray(
-    d.struct({
-      ORCID: d.optional(OrcidUrlD),
-      given: d.string,
-      family: d.string,
-    }),
+    d.union(
+      d.struct({
+        name: d.string,
+      }),
+      d.struct({
+        ORCID: d.optional(OrcidUrlD),
+        given: d.string,
+        family: d.string,
+      }),
+    ),
   ),
   DOI: DoiD,
   published: d.struct({

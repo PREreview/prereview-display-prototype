@@ -48,10 +48,14 @@ function normalizeCrossrefData(doiData: CrossrefDoi): DoiData {
     abstract: pipe(doiData.abstract, O.map(S.remove('jats:'))),
     authors: pipe(
       doiData.author,
-      RA.map(author => ({
-        name: `${author.given} ${author.family}`,
-        orcid: author.ORCID,
-      })),
+      RA.map(author =>
+        'name' in author
+          ? { name: author.name, orcid: O.none }
+          : {
+              name: `${author.given} ${author.family}`,
+              orcid: author.ORCID,
+            },
+      ),
     ),
     doi: doiData.DOI,
     published: getFirstPublishedDate(doiData),
