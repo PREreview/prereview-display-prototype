@@ -108,6 +108,7 @@ const ZenodoRecordD = d.struct({
         orcid: d.optional(OrcidD),
       }),
     ),
+    keywords: d.optional(d.readonlyNonEmptyArray(d.string)),
     description: d.string,
     related_identifiers: d.readonlyNonEmptyArray(RelatedIdentifierC),
     title: d.string,

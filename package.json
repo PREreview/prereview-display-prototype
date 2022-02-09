@@ -17,10 +17,11 @@
     "http-methods-ts": "*",
     "hyper-ts": "^0.7.7",
     "hyper-ts-routing": "*",
-    "node-fetch": "^2.6.7",
     "io-ts": "^2.2.16",
     "logger-ts": "*",
+    "node-fetch": "^2.6.7",
     "orcid-ts": "*",
+    "text-clipper": "^2.2.0",
     "ts-pattern": "^3.3.4",
     "url-ts": "*"
   },

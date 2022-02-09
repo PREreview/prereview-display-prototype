@@ -1,9 +1,11 @@
 import * as doi from 'doi-ts'
+import { format } from 'fp-ts-routing'
 import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import { and } from 'fp-ts/Refinement'
+import * as B from 'fp-ts/boolean'
 import { constant, flow, pipe } from 'fp-ts/function'
 import { MediaType, Status } from 'hyper-ts'
 import * as M from 'hyper-ts/lib/Middleware'
@@ -13,6 +15,7 @@ import { Author, DoiData, fetchDoi } from '../fetch-doi'
 import { ServiceUnavailable } from '../http-error'
 import { PositiveInt } from '../number'
 import { page } from '../page'
+import { reviewMatch } from '../router'
 import * as S from '../string'
 import { ZenodoRecord, getRecord, hasRelation, hasScheme } from '../zenodo'
 
@@ -34,17 +37,52 @@ const fetchDetails = flow(
   ),
 )
 
-function displayReview(review: ZenodoRecord) {
+function displayFullReview(review: ZenodoRecord) {
   return `
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">${pipe(review.metadata.creators, displayAuthors)}</h5>
     <h6 class="card-subtitle mb-2 text-muted">${review.doi}</h6>
-    <p class="card-text">${review.metadata.description}</p>
-    <a href="${review.links.latest_html}">Read the full review</a>
+    <div class="card-text">
+      ${review.metadata.description}
+    </div>
+    <a href="${review.links.latest_html}">Read the review on Zenodo</a>
   </div>
 </div>
 `
+}
+
+function displayRapidReview(review: ZenodoRecord) {
+  return `
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title"><span class="badge bg-secondary">Rapid Review</span> ${pipe(
+      review.metadata.creators,
+      displayAuthors,
+    )}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">${review.doi}</h6>
+    <div class="card-text">
+      ${review.metadata.description}
+    </div>
+    <a href="${review.links.latest_html}">Read the review on Zenodo</a>
+  </div>
+</div>
+`
+}
+
+function isARapidReview(review: ZenodoRecord) {
+  return pipe(review.metadata.keywords, O.filter(RA.elem(S.Eq)('rapid-review')), O.isSome)
+}
+
+function displayReview(review: ZenodoRecord) {
+  return pipe(
+    review,
+    isARapidReview,
+    B.match(
+      () => displayFullReview(review),
+      () => displayRapidReview(review),
+    ),
+  )
 }
 
 const displayNoAbstract = constant('<p>No abstract available</p>')

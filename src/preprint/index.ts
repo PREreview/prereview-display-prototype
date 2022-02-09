@@ -72,7 +72,7 @@ function createPage({ preprint, reviews }: Details) {
 
     <hr class="mt-5 mb-5">
 
-    <h2>Full PREreviews</h2>
+    <h2>PREreviews</h2>
 
     ${maybeDisplayReviews(reviews)}
     
