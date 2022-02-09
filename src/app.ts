@@ -6,6 +6,7 @@ import { match } from 'ts-pattern'
 import { home } from './home'
 import { handleError } from './http-error'
 import { preprint } from './preprint'
+import { publishRapidReview } from './publish-rapid-review'
 import { publishReview } from './publish-review'
 import { review } from './review'
 import { router } from './router'
@@ -21,6 +22,7 @@ const routerMiddleware = pipe(
       .with({ _type: 'Preprint' }, route => pipe(route.doi, preprint))
       .with({ _type: 'Review' }, route => pipe(route.id, review))
       .with({ _type: 'PublishReview' }, route => pipe(route.doi, publishReview))
+      .with({ _type: 'PublishRapidReview' }, route => pipe(route.doi, publishRapidReview))
       .with({ _type: 'Search' }, route => pipe(route.query, search))
       .exhaustive(),
   ),

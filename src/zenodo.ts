@@ -51,6 +51,7 @@ const DepositMetadataC = c.struct({
     }),
   ),
   description: NonEmptyStringC,
+  keywords: c.optional(c.readonlyNonEmptyArray(c.string)),
   related_identifiers: c.readonlyNonEmptyArray(RelatedIdentifierC),
   title: NonEmptyStringC,
   communities: c.readonlyArray(

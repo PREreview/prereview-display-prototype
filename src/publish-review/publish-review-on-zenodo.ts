@@ -30,6 +30,7 @@ function reviewToZenodoMetadata(review: NewReview): DepositMetadata {
     title: S.nonEmpty('Review title'),
     creators: [{ name: review.name, orcid: O.none }],
     description: review.content,
+    keywords: O.none,
     related_identifiers: [
       {
         relation: 'reviews',

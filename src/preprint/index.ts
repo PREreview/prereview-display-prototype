@@ -8,7 +8,7 @@ import * as RM from 'hyper-ts/lib/ReaderMiddleware'
 import { DoiData } from '../fetch-doi'
 import { ServiceUnavailable } from '../http-error'
 import { page } from '../page'
-import { publishReviewMatch } from '../router'
+import { publishRapidReviewMatch, publishReviewMatch } from '../router'
 import * as S from '../string'
 import { ZenodoRecord } from '../zenodo'
 import { maybeDisplayAbstract } from './display-abstract'
@@ -80,6 +80,10 @@ function createPage({ preprint, reviews }: Details) {
       Add PREreview
     </a>
     
+    <a href="${format(publishRapidReviewMatch.formatter, { doi: preprint.doi })}" class="btn btn-primary mt-5">
+      Add rapid review
+    </a>
+
   </div>
 
   </div>

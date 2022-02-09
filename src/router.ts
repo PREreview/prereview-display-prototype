@@ -54,6 +54,12 @@ class PublishReview {
   constructor(readonly doi: Doi) {}
 }
 
+class PublishRapidReview {
+  readonly _type = 'PublishRapidReview'
+
+  constructor(readonly doi: Doi) {}
+}
+
 class Search {
   readonly _type = 'Search'
 
@@ -68,6 +74,13 @@ export const publishReviewMatch = pipe(
   R.lit('preprints'),
   R.then(type('doi', DoiC)),
   R.then(R.lit('review')),
+  R.then(R.end),
+)
+
+export const publishRapidReviewMatch = pipe(
+  R.lit('preprints'),
+  R.then(type('doi', DoiC)),
+  R.then(R.lit('rapid-review')),
   R.then(R.end),
 )
 
@@ -96,6 +109,10 @@ export const router = pipe(
     pipe(
       publishReviewMatch.parser,
       R.map(params => new PublishReview(params.doi)),
+    ),
+    pipe(
+      publishRapidReviewMatch.parser,
+      R.map(params => new PublishRapidReview(params.doi)),
     ),
     pipe(
       searchMatch.parser,
