@@ -5,10 +5,11 @@ import * as RA from 'fp-ts/ReadonlyArray'
 import { and } from 'fp-ts/Refinement'
 import { constant, pipe } from 'fp-ts/function'
 import { fetchDoi } from '../fetch-doi'
-import { ZenodoRecord, fetchReviews, hasRelation, hasScheme } from '../zenodo'
+import { ZenodoRecord, hasRelation, hasScheme, searchRecords } from '../zenodo'
 
 export const fetchDetails = pipe(
-  fetchReviews,
+  new URLSearchParams({ communities: 'prereview-test-community' }),
+  searchRecords,
   RTE.chainW(RTE.traverseArray(fetchDetailsFromReview)),
   RTE.getOrElseW(() => RT.of(RA.empty)),
 )

@@ -167,20 +167,11 @@ export const getRecord = flow(
   RTE.mapLeft(constant(new Error('Unable to read from Zenodo'))),
 )
 
-export const fetchReviews = pipe(
-  new URLSearchParams({ communities: 'prereview-test-community' }),
+export const searchRecords = flow(
   search,
   RTE.chainW(decodeResults),
   RTE.bimap(constant(new Error('Unable to read from Zenodo')), results => results.hits.hits),
 )
-
-export const fetchReviewsFor = (doi: Doi) =>
-  pipe(
-    new URLSearchParams({ q: `related.identifier:"${doi}"` }),
-    search,
-    RTE.chainW(decodeResults),
-    RTE.bimap(constant(new Error('Unable to read from Zenodo')), results => results.hits.hits),
-  )
 
 type File = {
   name: string
