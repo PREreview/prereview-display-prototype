@@ -11,7 +11,8 @@ import * as O from 'fp-ts/Option'
 import { absurd, constant, flow, pipe } from 'fp-ts/function'
 import http from 'http'
 import { toRequestHandler } from 'hyper-ts/lib/express'
-import * as l from 'logger-ts'
+import * as LE from 'logger-ts'
+import * as L from 'logging-ts/lib/IO'
 import nodeFetch from 'node-fetch'
 import { appMiddleware } from './app'
 import * as d from './decoder'
@@ -19,19 +20,19 @@ import { EnvD } from './env'
 import * as s from './string'
 import { ZenodoEnv } from './zenodo'
 
-type AppEnv = FetchEnv & l.LoggerEnv & ZenodoEnv
+type AppEnv = FetchEnv & LE.LoggerEnv & ZenodoEnv
 
 function getRequestId() {
   return pipe(rTracer.id(), O.fromPredicate(s.isString))
 }
 
-const withRequestId = (payload: JsonRecord) =>
+const withRequestId = (entry: LE.LogEntry) =>
   pipe(
     getRequestId(),
-    O.match(constant(payload), requestId => ({ ...payload, requestId })),
+    O.match(constant(entry), requestId => ({ ...entry, payload: { ...entry.payload, requestId } })),
   )
 
-const logger = pipe(C.log, l.withShow(l.showEntry))
+const logger = pipe(C.log, L.contramap(LE.withColor(LE.showEntry.show)))
 
 const env = pipe(
   process.env,
@@ -51,7 +52,7 @@ const env = pipe(
 
 const deps: AppEnv = {
   fetch: nodeFetch as any,
-  logger: pipe(logger, l.withPayload(withRequestId)),
+  logger: pipe(logger, L.contramap(withRequestId)),
   zenodoApiKey: env.ZENODO_API_KEY,
 }
 
@@ -59,10 +60,10 @@ const app = express()
   .disable('x-powered-by')
   .use(rTracer.expressMiddleware())
   .use((req, res, next) => {
-    pipe({ method: req.method, url: req.url }, l.infoP('Received HTTP request'))(deps)()
+    pipe({ method: req.method, url: req.url }, LE.infoP('Received HTTP request'))(deps)()
 
     res.once('finish', () => {
-      pipe({ status: res.statusCode }, l.infoP('Sent HTTP response'))(deps)()
+      pipe({ status: res.statusCode }, LE.infoP('Sent HTTP response'))(deps)()
     })
 
     res.once('close', () => {
@@ -70,7 +71,7 @@ const app = express()
         return
       }
 
-      pipe({ status: res.statusCode }, l.warnP('HTTP response may not have been completely sent'))(deps)()
+      pipe({ status: res.statusCode }, LE.warnP('HTTP response may not have been completely sent'))(deps)()
     })
 
     next()
@@ -81,15 +82,15 @@ const app = express()
 const server = http.createServer(app)
 
 server.on('listening', () => {
-  pipe(server.address() as unknown as JsonRecord, l.debugP('Server listening'))(deps)()
+  pipe(server.address() as unknown as JsonRecord, LE.debugP('Server listening'))(deps)()
 })
 
 createTerminus(server, {
   onShutdown: async () => {
-    l.debug('Shutting server down')(deps)()
+    LE.debug('Shutting server down')(deps)()
   },
   onSignal: async () => {
-    l.debug('Signal received')(deps)()
+    LE.debug('Signal received')(deps)()
   },
   signals: ['SIGINT', 'SIGTERM'],
 })

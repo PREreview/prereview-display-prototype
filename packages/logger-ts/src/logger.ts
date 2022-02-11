@@ -1,15 +1,14 @@
+import chalk from 'chalk'
 import * as RIO from 'fp-ts-contrib/ReaderIO'
 import * as IO from 'fp-ts/IO'
 import * as S from 'fp-ts/Show'
-import { apply, constant, flow, pipe } from 'fp-ts/function'
+import { apply, flow, pipe } from 'fp-ts/function'
 import * as L from 'logging-ts/lib/IO'
 import * as D from './date'
 import * as Json from './json'
 
-export type Logger = L.LoggerIO<LogEntry>
-
 export type LoggerEnv = {
-  logger: Logger
+  logger: L.LoggerIO<LogEntry>
 }
 
 // -------------------------------------------------------------------------------------
@@ -37,6 +36,18 @@ export const LogEntry = (message: string, date: Date, level: LogLevel, payload: 
 })
 
 // -------------------------------------------------------------------------------------
+// destructors
+// -------------------------------------------------------------------------------------
+
+const match =
+  <R>(patterns: {
+    readonly [K in LogLevel]: (entry: LogEntry) => R
+  }) =>
+  (entry: LogEntry) => {
+    return patterns[entry.level](entry)
+  }
+
+// -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------
 
@@ -50,6 +61,14 @@ const logWithLevel = (level: LogLevel) => (message: string) => (payload: Json.Js
       ),
     ),
   )
+
+export const withColor = (f: (a: LogEntry) => string) =>
+  match({
+    DEBUG: flow(f, chalk.cyan),
+    INFO: flow(f, chalk.magenta),
+    WARN: flow(f, chalk.yellow),
+    ERROR: flow(f, chalk.red),
+  })
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -77,15 +96,3 @@ export const warn = flow(warnP, apply({}))
 export const errorP = logWithLevel('ERROR')
 
 export const error = flow(errorP, apply({}))
-
-export const withShow =
-  (show: S.Show<LogEntry>) =>
-  (logger: L.LoggerIO<string>): Logger =>
-    flow(entry => show.show(entry), logger)
-
-export const withJson = withShow(Json.Show as unknown as S.Show<LogEntry>)
-
-export const withPayload =
-  (attacher: (payload: Json.JsonRecord) => Json.JsonRecord) =>
-  (logger: Logger): Logger =>
-    flow(entry => ({ ...entry, payload: attacher(entry.payload) }), logger)
