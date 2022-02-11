@@ -81,18 +81,22 @@ export const showEntry: S.Show<LogEntry> = {
     }`,
 }
 
-export const debugP = logWithLevel('DEBUG')
+export const debugP: (message: string) => (payload: Json.JsonRecord) => RIO.ReaderIO<LoggerEnv, void> =
+  logWithLevel('DEBUG')
 
-export const debug = flow(debugP, apply({}))
+export const debug: (message: string) => RIO.ReaderIO<LoggerEnv, void> = flow(debugP, apply({}))
 
-export const infoP = logWithLevel('INFO')
+export const infoP: (message: string) => (payload: Json.JsonRecord) => RIO.ReaderIO<LoggerEnv, void> =
+  logWithLevel('INFO')
 
-export const info = flow(infoP, apply({}))
+export const info: (message: string) => RIO.ReaderIO<LoggerEnv, void> = flow(infoP, apply({}))
 
-export const warnP = logWithLevel('WARN')
+export const warnP: (message: string) => (payload: Json.JsonRecord) => RIO.ReaderIO<LoggerEnv, void> =
+  logWithLevel('WARN')
 
-export const warn = flow(warnP, apply({}))
+export const warn: (message: string) => RIO.ReaderIO<LoggerEnv, void> = flow(warnP, apply({}))
 
-export const errorP = logWithLevel('ERROR')
+export const errorP: (message: string) => (payload: Json.JsonRecord) => RIO.ReaderIO<LoggerEnv, void> =
+  logWithLevel('ERROR')
 
-export const error = flow(errorP, apply({}))
+export const error: (message: string) => RIO.ReaderIO<LoggerEnv, void> = flow(errorP, apply({}))
