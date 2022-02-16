@@ -1,4 +1,5 @@
 import { format } from 'fp-ts-routing'
+import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -7,14 +8,17 @@ import { MediaType, Status } from 'hyper-ts'
 import * as M from 'hyper-ts/lib/Middleware'
 import * as RM from 'hyper-ts/lib/ReaderMiddleware'
 import { Author, EuropePmcRecord, searchFor } from '../europe-pmc'
+import { header } from '../header'
 import { ServiceUnavailable } from '../http-error'
 import { page } from '../page'
 import { preprintMatch, searchMatch } from '../router'
 import * as S from '../string'
+import { User, getUser } from '../user'
 
 type Details = {
   query: string
   results: ReadonlyArray<EuropePmcRecord>
+  user: O.Option<User>
 }
 
 function displayResult(result: EuropePmcRecord) {
@@ -42,10 +46,12 @@ function displayAuthor(author: Author): string {
 
 const displayAuthors = flow(RNEA.map(displayAuthor), S.join(', '))
 
-function createPage({ query, results }: Details) {
+function createPage({ query, results, user }: Details) {
   return page(
     'Search results',
     `
+${header(user)}
+
 <main class="col-lg-6 mx-auto p-3 py-md-5">
 
   <header>
@@ -81,6 +87,7 @@ const fetchDetails = (query: string) =>
 export const search = flow(
   fetchDetails,
   RM.fromReaderTaskEither,
+  RM.apSW('user', getUser),
   RM.ichainFirst(() => RM.status(Status.OK)),
   RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
   RM.ichainFirst(() => RM.closeHeaders()),

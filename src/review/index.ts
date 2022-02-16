@@ -1,5 +1,4 @@
 import * as doi from 'doi-ts'
-import { format } from 'fp-ts-routing'
 import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
@@ -12,16 +11,18 @@ import * as M from 'hyper-ts/lib/Middleware'
 import * as RM from 'hyper-ts/lib/ReaderMiddleware'
 import * as orcid from 'orcid-ts'
 import { Author, DoiData, fetchDoi } from '../fetch-doi'
+import { header } from '../header'
 import { ServiceUnavailable } from '../http-error'
 import { PositiveInt } from '../number'
 import { page } from '../page'
-import { reviewMatch } from '../router'
 import * as S from '../string'
+import { User, getUser } from '../user'
 import { ZenodoRecord, getRecord, hasRelation, hasScheme } from '../zenodo'
 
 type Details = {
   preprint: DoiData
   review: ZenodoRecord
+  user: O.Option<User>
 }
 
 const fetchDetails = flow(
@@ -103,10 +104,12 @@ const displayNoAuthors = constant('Unknown')
 const displayAuthors = flow(RNEA.map(displayAuthor), S.join(', '))
 const maybeDisplayAuthors = RA.match(displayNoAuthors, displayAuthors)
 
-function createPage({ preprint, review }: Details) {
+function createPage({ preprint, review, user }: Details) {
   return page(
     preprint.title,
     `
+${header(user)}
+
 <main class="container-fluid px-5">
 
   <div class="row gx-5">
@@ -160,6 +163,7 @@ export const review = (id: PositiveInt) =>
   pipe(
     fetchDetails(id),
     RM.fromReaderTaskEither,
+    RM.apSW('user', getUser),
     RM.ichainFirst(() => RM.status(Status.OK)),
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),

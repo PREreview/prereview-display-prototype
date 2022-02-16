@@ -1,17 +1,18 @@
 import * as doi from 'doi-ts'
-import { format } from 'fp-ts-routing'
 import * as O from 'fp-ts/Option'
 import { constant, flow, pipe } from 'fp-ts/function'
 import { MediaType, Status } from 'hyper-ts'
 import * as M from 'hyper-ts/lib/Middleware'
 import * as RM from 'hyper-ts/lib/ReaderMiddleware'
 import { DoiData } from '../fetch-doi'
+import { header } from '../header'
 import { ServiceUnavailable } from '../http-error'
 import { page } from '../page'
-import { publishRapidReviewMatch, publishReviewMatch } from '../router'
 import * as S from '../string'
+import { User, getUser } from '../user'
 import { ZenodoRecord } from '../zenodo'
 import { maybeDisplayAbstract } from './display-abstract'
+import { maybeDisplayAddReviewButtons } from './display-add-review-buttons'
 import { maybeDisplayAuthors } from './display-authors'
 import { maybeDisplayReviews } from './display-reviews'
 import { fetchDetails } from './fetch-details'
@@ -20,6 +21,7 @@ export const preprint = (doi: doi.Doi) =>
   pipe(
     fetchDetails(doi),
     RM.fromReaderTaskEither,
+    RM.apSW('user', getUser),
     RM.ichainFirst(() => RM.status(Status.OK)),
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),
@@ -30,14 +32,17 @@ export const preprint = (doi: doi.Doi) =>
 type Details = {
   preprint: DoiData
   reviews: ReadonlyArray<ZenodoRecord>
+  user: O.Option<User>
 }
 
 const sendPage = flow(createPage, M.send)
 
-function createPage({ preprint, reviews }: Details) {
+function createPage({ preprint, reviews, user }: Details) {
   return page(
     preprint.title,
     `
+${header(user)}
+
 <main class="container-fluid px-5">
 
   <div class="row gx-5">
@@ -76,13 +81,7 @@ function createPage({ preprint, reviews }: Details) {
 
     ${maybeDisplayReviews(reviews)}
     
-    <a href="${format(publishReviewMatch.formatter, { doi: preprint.doi })}" class="btn btn-primary mt-5">
-      Add PREreview
-    </a>
-    
-    <a href="${format(publishRapidReviewMatch.formatter, { doi: preprint.doi })}" class="btn btn-primary mt-5">
-      Add rapid review
-    </a>
+    ${maybeDisplayAddReviewButtons(preprint.doi)(user)}
 
   </div>
 

@@ -5,6 +5,8 @@ import * as O from 'fp-ts/Option'
 import { pipe, tuple } from 'fp-ts/function'
 import * as c from 'io-ts/Codec'
 import { home } from './home'
+import { logIn } from './log-in'
+import { logOut } from './log-out'
 import { NumberFromStringC, PositiveIntC } from './number'
 import { preprint } from './preprint'
 import { publishRapidReview } from './publish-rapid-review'
@@ -64,6 +66,10 @@ export const reviewMatch = pipe(
 
 export const searchMatch = pipe(R.lit('search'), R.then(query(c.partial({ query: c.string }))), R.then(R.end))
 
+export const logInMatch = pipe(R.lit('log-in'), R.then(R.end))
+
+export const logOutMatch = pipe(R.lit('log-out'), R.then(R.end))
+
 export const router = pipe(
   [
     pipe(
@@ -89,6 +95,14 @@ export const router = pipe(
     pipe(
       searchMatch.parser,
       R.map(params => search(params.query ?? '')),
+    ),
+    pipe(
+      logInMatch.parser,
+      R.map(() => logIn),
+    ),
+    pipe(
+      logOutMatch.parser,
+      R.map(() => logOut),
     ),
   ],
   M.concatAll(R.getParserMonoid()),

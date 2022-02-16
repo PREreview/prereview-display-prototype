@@ -1,18 +1,33 @@
 import { format } from 'fp-ts-routing'
-import * as RTE from 'fp-ts/ReaderTaskEither'
+import * as O from 'fp-ts/Option'
+import * as RT from 'fp-ts/ReaderTask'
 import { flow, pipe } from 'fp-ts/function'
 import { MediaType, Status } from 'hyper-ts'
 import * as M from 'hyper-ts/lib/Middleware'
 import * as RM from 'hyper-ts/lib/ReaderMiddleware'
+import { DoiData } from '../fetch-doi'
+import { header } from '../header'
 import { page } from '../page'
 import { searchMatch } from '../router'
+import { User, getUser } from '../user'
+import { ZenodoRecord } from '../zenodo'
 import { maybeDisplayReviews } from './display-reviews'
 import { fetchDetails } from './fetch-details'
 
-const createPage = flow(maybeDisplayReviews, reviews =>
+type Details = {
+  readonly reviews: ReadonlyArray<{
+    preprint: DoiData
+    review: ZenodoRecord
+  }>
+  readonly user: O.Option<User>
+}
+
+const createPage = ({ reviews, user }: Details) =>
   page(
     'Home',
     `
+${header(user)}
+
 <main class="col-lg-6 mx-auto p-3 py-md-5">
 
   <header>
@@ -35,18 +50,19 @@ const createPage = flow(maybeDisplayReviews, reviews =>
     </div>
   </form>
 
-  <div>${reviews}</div>
+  <div>${maybeDisplayReviews(reviews)}</div>
 
 </main>
 `,
-  ),
-)
+  )
 
 const sendPage = flow(createPage, M.send)
 
 export const home = pipe(
   fetchDetails,
+  RT.bindTo('reviews'),
   RM.rightReaderTask,
+  RM.apSW('user', getUser),
   RM.ichainFirst(() => RM.status(Status.OK)),
   RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
   RM.ichainFirst(() => RM.closeHeaders()),

@@ -1,0 +1,18 @@
+{
+  "name": "hyper-ts-session",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "cookie": "^0.4.2",
+    "cookie-parser": "^1.4.6",
+    "uuid-ts": "*"
+  },
+  "peerDependencies": {
+    "fp-ts": "^2.11.8",
+    "hyper-ts": "^0.7.6"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.4.1",
+    "@types/cookie-parser": "^1.4.2"
+  }
+}

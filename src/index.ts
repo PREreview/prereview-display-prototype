@@ -1,5 +1,6 @@
 import { createTerminus } from '@godaddy/terminus'
 import rTracer from 'cls-rtracer'
+import cookieParser from 'cookie-parser'
 import 'dotenv/config'
 import express from 'express'
 import { FetchEnv } from 'fetch-fp-ts'
@@ -10,6 +11,7 @@ import { JsonRecord } from 'fp-ts/Json'
 import * as O from 'fp-ts/Option'
 import { absurd, constant, flow, pipe } from 'fp-ts/function'
 import http from 'http'
+import { SessionEnv, inMemorySessionStore } from 'hyper-ts-session'
 import { toRequestHandler } from 'hyper-ts/lib/express'
 import * as LE from 'logger-ts'
 import * as L from 'logging-ts/lib/IO'
@@ -20,7 +22,7 @@ import { EnvD } from './env'
 import * as s from './string'
 import { ZenodoEnv } from './zenodo'
 
-type AppEnv = FetchEnv & LE.LoggerEnv & ZenodoEnv
+type AppEnv = FetchEnv & LE.LoggerEnv & SessionEnv & ZenodoEnv
 
 function getRequestId() {
   return pipe(rTracer.id(), O.fromPredicate(s.isString))
@@ -53,12 +55,15 @@ const env = pipe(
 const deps: AppEnv = {
   fetch: nodeFetch as any,
   logger: pipe(logger, L.contramap(withRequestId)),
+  secret: 'something secret',
+  sessionStore: inMemorySessionStore(),
   zenodoApiKey: env.ZENODO_API_KEY,
 }
 
 const app = express()
   .disable('x-powered-by')
   .use(rTracer.expressMiddleware())
+  .use(cookieParser(deps.secret))
   .use((req, res, next) => {
     pipe({ method: req.method, url: req.url }, LE.infoP('Received HTTP request'))(deps)()
 

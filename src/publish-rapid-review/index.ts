@@ -1,5 +1,6 @@
 import { Doi } from 'doi-ts'
 import { format } from 'fp-ts-routing'
+import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -17,6 +18,7 @@ import { ServiceUnavailable, handleError } from '../http-error'
 import { page } from '../page'
 import { reviewMatch } from '../router'
 import * as S from '../string'
+import { User, getUser } from '../user'
 import { SubmittedDeposition } from '../zenodo'
 import { NewRapidReviewD } from './new-rapid-review'
 import { publishRapidReviewOnZenodo } from './publish-rapid-review-on-zenodo'
@@ -49,7 +51,7 @@ const showErrors = flow(
 
 const maybeShowErrors = O.match(constant(S.empty), showErrors)
 
-function createPage({ preprint, errors }: { preprint: DoiData; errors: O.Option<d.DecodeError> }) {
+function createPage({ preprint, errors, user }: { preprint: DoiData; errors: O.Option<d.DecodeError>; user: User }) {
   return page(
     `Add a rapid review of ${preprint.title}`,
     `
@@ -75,7 +77,7 @@ function createPage({ preprint, errors }: { preprint: DoiData; errors: O.Option<
         <label for='name' class='col-form-label'>Name</label>
       </div>
       <div class='col-auto'>
-        <input type='text' class='form-control' id='name' name='name'>
+        <input type='text' class='form-control' id='name' name='name' value='${user.name}'>
       </div>
     </div>
 
@@ -270,6 +272,7 @@ export const publishReviewForm = (doi: Doi) =>
     RTE.bindTo('preprint'),
     RTE.apSW('errors', pipe(O.none, RTE.right)),
     RM.fromReaderTaskEither,
+    RM.apSW('user', pipe(getUser, RM.chainEitherK(E.fromOption(() => new Error('No user'))))),
     RM.ichainFirst(() => RM.status(Status.OK)),
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),
@@ -283,6 +286,7 @@ export const publishReviewErrorForm = (doi: Doi) => (errors: d.DecodeError) =>
     RTE.apS('errors', pipe(errors, O.some, RTE.right)),
     RTE.apS('preprint', pipe(doi, fetchDoi)),
     RM.fromReaderTaskEither,
+    RM.apSW('user', pipe(getUser, RM.chainEitherK(E.fromOption(() => new Error('No user'))))),
     RM.ichainFirst(() => RM.status(Status.BadRequest)),
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
     RM.ichainFirst(() => RM.closeHeaders()),
