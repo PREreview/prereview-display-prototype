@@ -1,10 +1,16 @@
-import { Doi, DoiC } from 'doi-ts'
+import { DoiC } from 'doi-ts'
 import * as R from 'fp-ts-routing'
 import * as M from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import { pipe, tuple } from 'fp-ts/function'
 import * as c from 'io-ts/Codec'
-import { NumberFromStringC, PositiveInt, PositiveIntC } from './number'
+import { home } from './home'
+import { NumberFromStringC, PositiveIntC } from './number'
+import { preprint } from './preprint'
+import { publishRapidReview } from './publish-rapid-review'
+import { publishReview } from './publish-review'
+import { review } from './review'
+import { search } from './search'
 
 const singleton = <K extends string, V>(k: K, v: V): { [_ in K]: V } => ({ [k as any]: v } as any)
 
@@ -30,40 +36,6 @@ export function query<A>(codec: c.Codec<unknown, Record<string, R.QueryValues>, 
     ),
     new R.Formatter((r, query) => new R.Route(r.parts, codec.encode(query))),
   )
-}
-
-class Home {
-  readonly _type = 'Home'
-}
-
-class Preprint {
-  readonly _type = 'Preprint'
-
-  constructor(readonly doi: Doi) {}
-}
-
-class Review {
-  readonly _type = 'Review'
-
-  constructor(readonly id: PositiveInt) {}
-}
-
-class PublishReview {
-  readonly _type = 'PublishReview'
-
-  constructor(readonly doi: Doi) {}
-}
-
-class PublishRapidReview {
-  readonly _type = 'PublishRapidReview'
-
-  constructor(readonly doi: Doi) {}
-}
-
-class Search {
-  readonly _type = 'Search'
-
-  constructor(readonly query: string) {}
 }
 
 export const homeMatch = R.end
@@ -96,27 +68,27 @@ export const router = pipe(
   [
     pipe(
       homeMatch.parser,
-      R.map(() => new Home()),
+      R.map(() => home),
     ),
     pipe(
       preprintMatch.parser,
-      R.map(params => new Preprint(params.doi)),
+      R.map(params => preprint(params.doi)),
     ),
     pipe(
       reviewMatch.parser,
-      R.map(params => new Review(params.id)),
+      R.map(params => review(params.id)),
     ),
     pipe(
       publishReviewMatch.parser,
-      R.map(params => new PublishReview(params.doi)),
+      R.map(params => publishReview(params.doi)),
     ),
     pipe(
       publishRapidReviewMatch.parser,
-      R.map(params => new PublishRapidReview(params.doi)),
+      R.map(params => publishRapidReview(params.doi)),
     ),
     pipe(
       searchMatch.parser,
-      R.map(params => new Search(params.query ?? '')),
+      R.map(params => search(params.query ?? '')),
     ),
   ],
   M.concatAll(R.getParserMonoid()),
