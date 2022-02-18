@@ -5,6 +5,7 @@
   "dependencies": {
     "cookie": "^0.4.2",
     "cookie-parser": "^1.4.6",
+    "io-ts": "^2.2.16",
     "uuid-ts": "*"
   },
   "peerDependencies": {

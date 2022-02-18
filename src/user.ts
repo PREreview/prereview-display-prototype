@@ -10,4 +10,9 @@ export const UserC = c.struct({
 
 export type User = c.TypeOf<typeof UserC>
 
-export const getUser = pipe(getSession, RM.map(O.chain(O.fromEitherK(UserC.decode))))
+export const getUser = pipe(
+  getSession,
+  RM.chainEitherKW(UserC.decode),
+  RM.map(O.some),
+  RM.orElse(() => RM.of(O.none as O.Option<User>)),
+)

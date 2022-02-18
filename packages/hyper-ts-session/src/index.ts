@@ -10,6 +10,7 @@ import * as TO from 'fp-ts/TaskOption'
 import { flow, pipe } from 'fp-ts/function'
 import * as M from 'hyper-ts/lib/Middleware'
 import * as RM from 'hyper-ts/lib/ReaderMiddleware'
+import * as d from 'io-ts/Decoder'
 import * as UUID from 'uuid-ts'
 
 export type SessionEnv = {
@@ -41,19 +42,35 @@ export interface SessionStore {
 
 export const getCookies = M.decodeHeader(
   'Cookie',
-  flow(value => cookie.parse(typeof value === 'string' ? value : ''), E.right),
+  flow(
+    d.string.decode,
+    E.bimap(() => 'no-cookies' as const, cookie.parse),
+  ),
 )
-export const getCookie = (name: string) => pipe(getCookies, M.map(r.lookup(name)))
+export const getCookie = (name: string) =>
+  pipe(
+    getCookies,
+    M.mapLeft(() => 'no-cookie' as const),
+    M.chainEitherKW(
+      flow(
+        // todo add chainOptionKW
+        r.lookup(name),
+        E.fromOption(() => 'no-cookie' as const),
+      ),
+    ),
+  )
 
 export const currentSessionId = pipe(
   RM.ask<SessionEnv>(),
   RM.chainMiddlewareK(({ secret }) =>
     pipe(
       getCookie('session'),
-      M.map(
+      M.mapLeft(() => 'no-session' as const),
+      M.chainEitherKW(
         flow(
-          O.chainNullableK(value => cookieParser.signedCookie(value, secret) || null),
-          O.filter(UUID.isUuid),
+          value => cookieParser.signedCookie(value, secret) || null,
+          E.fromNullable('no-session' as const),
+          E.filterOrElse(UUID.isUuid, () => 'no-session' as const),
         ),
       ),
     ),
@@ -66,12 +83,7 @@ export const saveSession = (session: JsonRecord) =>
     RM.chain(({ sessionStore }) =>
       pipe(
         currentSessionId,
-        RM.chainTaskK(
-          flow(
-            TO.fromOption,
-            TO.getOrElse(() => sessionStore.newSessionId()),
-          ),
-        ),
+        RM.orElseW(() => pipe(sessionStore.newSessionId(), RM.rightTask)),
         RM.chainFirstTaskK(id => sessionStore.put(id)(session)),
       ),
     ),
@@ -84,10 +96,8 @@ export const getSession = pipe(
       currentSessionId,
       RM.chainTaskEitherK(
         flow(
-          TE.fromOption(() => 'No session ID'),
-          TE.chainTaskOptionK(() => 'No session found')(sessionStore.get),
-          TE.map(O.some),
-          TE.altW(() => TE.right(O.none as O.Option<JsonRecord>)),
+          sessionStore.get,
+          TE.fromTaskOption(() => 'no-session' as const),
         ),
       ),
     ),
