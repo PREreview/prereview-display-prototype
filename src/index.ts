@@ -16,6 +16,7 @@ import { toRequestHandler } from 'hyper-ts/lib/express'
 import * as LE from 'logger-ts'
 import * as L from 'logging-ts/lib/IO'
 import nodeFetch from 'node-fetch'
+import path from 'path'
 import { appMiddleware } from './app'
 import * as d from './decoder'
 import { EnvD } from './env'
@@ -81,6 +82,7 @@ const app = express()
 
     next()
   })
+  .use('/assets', express.static(path.join(__dirname, '../assets')))
   .use(express.urlencoded({ extended: true }))
   .use(pipe(deps, appMiddleware, toRequestHandler))
 

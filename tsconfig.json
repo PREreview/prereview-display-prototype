@@ -1,10 +1,16 @@
 {
   "extends": "ts-node/node16/tsconfig.json",
   "compilerOptions": {
-    "incremental": true,
     "lib": ["dom"],
-    "rootDir": "src",
-    "outDir": "dist"
+    "isolatedModules": true,
+    "noEmit": true,
+    "rootDirs": [
+      "assets",
+      "src"
+    ]
   },
-  "include": ["src/**/*"]
+  "include": [
+    "assets/**/*",
+    "src/**/*"
+  ]
 }

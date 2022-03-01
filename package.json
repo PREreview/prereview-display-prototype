@@ -1,5 +1,35 @@
 {
   "private": true,
+  "engines": {
+    "node": "16",
+    "npm": "8"
+  },
+  "targets": {
+    "assets": {
+      "context": "browser",
+      "outputFormat": "esmodule",
+      "source": [
+        "assets/behaviour.ts",
+        "assets/style.css"
+      ]
+    },
+    "server": {
+      "context": "node",
+      "includeNodeModules": [
+        "doi-ts",
+        "fetch-fp-ts",
+        "http-methods-ts",
+        "hyper-ts-routing",
+        "hyper-ts-session",
+        "logger-ts",
+        "orcid-ts",
+        "url-ts",
+        "uuid-ts"
+      ],
+      "scopeHoist": false,
+      "source": "src/index.ts"
+    }
+  },
   "workspaces": [
     "packages/*"
   ],
@@ -35,13 +65,20 @@
     "@types/http-errors": "^1.8.2",
     "@types/node": "^16.11.19",
     "@types/node-fetch": "^2.5.12",
+    "bootstrap": "^5.1.3",
     "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5",
+    "parcel": "^2.3.2",
     "prettier": "^2.5.1",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "process": "^0.11.10",
+    "typescript": "^4.5.4",
+    "wait-on": "^6.0.1"
   },
   "scripts": {
     "format": "prettier --ignore-unknown --write '**'",
-    "start": "nodemon src/index.ts"
+    "watch": "parcel watch",
+    "serve": "wait-on dist/server/index.js && nodemon --delay 1 dist/server/index.js",
+    "start": "run-p watch serve",
+    "typecheck": "tsc"
   }
 }

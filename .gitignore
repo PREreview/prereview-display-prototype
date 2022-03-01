@@ -1,3 +1,5 @@
+/.parcel-cache/
+/dist/
 /node_modules/
 /packages/*/node_modules/
 /.env
