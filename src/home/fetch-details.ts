@@ -20,7 +20,7 @@ function fetchDetailsFromReview(review: ZenodoRecord) {
     RTE.apS('review', pipe(review, RTE.right)),
     RTE.apS(
       'preprint',
-      pipe(review, findFirstReviewedDoi, RTE.fromOption(constant('No reviewed preprint found')), RTE.chainW(fetchDoi)),
+      pipe(review, RTE.fromOptionK(constant('No reviewed preprint found'))(findFirstReviewedDoi), RTE.chainW(fetchDoi)),
     ),
   )
 }

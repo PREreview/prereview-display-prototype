@@ -159,14 +159,12 @@ ${header(user)}
 
 const sendPage = flow(createPage, M.send)
 
-export const review = (id: PositiveInt) =>
-  pipe(
-    fetchDetails(id),
-    RM.fromReaderTaskEither,
-    RM.apSW('user', getUser),
-    RM.ichainFirst(() => RM.status(Status.OK)),
-    RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
-    RM.ichainFirst(() => RM.closeHeaders()),
-    RM.ichainMiddlewareKW(sendPage),
-    RM.orElseMiddlewareK(ServiceUnavailable),
-  )
+export const review = flow(
+  RM.fromReaderTaskEitherK(fetchDetails),
+  RM.apSW('user', getUser),
+  RM.ichainFirst(() => RM.status(Status.OK)),
+  RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
+  RM.ichainFirst(() => RM.closeHeaders()),
+  RM.ichainMiddlewareKW(sendPage),
+  RM.orElseMiddlewareK(ServiceUnavailable),
+)

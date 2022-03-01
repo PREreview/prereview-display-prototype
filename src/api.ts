@@ -1,7 +1,6 @@
 import { BodyError, getJson } from 'fetch-fp-ts'
 import { Json } from 'fp-ts/Json'
 import * as RTE from 'fp-ts/ReaderTaskEither'
-import * as TE from 'fp-ts/TaskEither'
 import { flow, pipe } from 'fp-ts/function'
 import * as l from 'logger-ts'
 import * as d from './decoder'
@@ -16,5 +15,5 @@ export const logError =
     pipe(RTE.ask<l.LoggerEnv>(), RTE.chainIOK(pipe(error, errorToJson, l.errorP(message))))
 
 export function decode<A>(decoder: d.Decoder<Json, A>, message: string): Decoder<A> {
-  return flow(getJson, TE.chainEitherKW(decoder.decode), RTE.fromTaskEither, RTE.orElseFirst(logError(message)))
+  return flow(RTE.fromTaskEitherK(getJson), RTE.chainEitherKW(decoder.decode), RTE.orElseFirst(logError(message)))
 }

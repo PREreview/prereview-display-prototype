@@ -102,26 +102,24 @@ const onMethod = (doi: Doi) => (method: Method) =>
 export const publishReview = (doi: Doi) =>
   pipe(RM.decodeMethod(parse(constant(new BadRequest()))), RM.ichainW(onMethod(doi)), RM.orElseMiddlewareK(handleError))
 
-export const publishReviewForm = (doi: Doi) =>
-  pipe(
-    fetchDoi(doi),
-    RTE.bindTo('preprint'),
-    RTE.apSW('errors', pipe(O.none, RTE.right)),
-    RM.fromReaderTaskEither,
-    RM.apSW('user', pipe(getUser, RM.chainEitherK(E.fromOption(() => new Error('No user'))))),
-    RM.ichainFirst(() => RM.status(Status.OK)),
-    RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
-    RM.ichainFirst(() => RM.closeHeaders()),
-    RM.ichainMiddlewareKW(flow(createPage, M.send)),
-    RM.orElseMiddlewareK(ServiceUnavailable),
-  )
+export const publishReviewForm = flow(
+  RM.fromReaderTaskEitherK(fetchDoi),
+  RM.bindTo('preprint'),
+  RM.apSW('errors', pipe(O.none, RM.right)),
+  RM.apSW('user', pipe(getUser, RM.chainEitherK(E.fromOption(() => new Error('No user'))))),
+  RM.ichainFirst(() => RM.status(Status.OK)),
+  RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
+  RM.ichainFirst(() => RM.closeHeaders()),
+  RM.ichainMiddlewareKW(flow(createPage, M.send)),
+  RM.orElseMiddlewareK(ServiceUnavailable),
+)
 
 export const publishReviewErrorForm = (doi: Doi) => (errors: d.DecodeError) =>
   pipe(
-    RTE.Do,
-    RTE.apS('errors', pipe(errors, O.some, RTE.right)),
-    RTE.apS('preprint', pipe(doi, fetchDoi)),
-    RM.fromReaderTaskEither,
+    doi,
+    RM.fromReaderTaskEitherK(fetchDoi),
+    RM.bindTo('preprint'),
+    RM.apSW('errors', pipe(errors, O.some, RM.right)),
     RM.apSW('user', pipe(getUser, RM.chainEitherK(E.fromOption(() => new Error('No user'))))),
     RM.ichainFirst(() => RM.status(Status.BadRequest)),
     RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
@@ -131,8 +129,7 @@ export const publishReviewErrorForm = (doi: Doi) => (errors: d.DecodeError) =>
   )
 
 const goAndPublish = flow(
-  publishReviewOnZenodo,
-  RM.fromReaderTaskEither,
+  RM.fromReaderTaskEitherK(publishReviewOnZenodo),
   RM.map(createDepositionUrl),
   RM.ichainW(RM.redirect),
   RM.ichain(() => RM.closeHeaders()),

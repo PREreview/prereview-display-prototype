@@ -85,8 +85,7 @@ const fetchDetails = (query: string) =>
   pipe(RTE.Do, RTE.apS('query', RTE.right(query)), RTE.apS('results', pipe(query, searchFor)))
 
 export const search = flow(
-  fetchDetails,
-  RM.fromReaderTaskEither,
+  RM.fromReaderTaskEitherK(fetchDetails),
   RM.apSW('user', getUser),
   RM.ichainFirst(() => RM.status(Status.OK)),
   RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),

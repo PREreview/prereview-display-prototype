@@ -17,25 +17,23 @@ import { maybeDisplayAuthors } from './display-authors'
 import { maybeDisplayReviews } from './display-reviews'
 import { fetchDetails } from './fetch-details'
 
-export const preprint = (doi: doi.Doi) =>
-  pipe(
-    fetchDetails(doi),
-    RM.fromReaderTaskEither,
-    RM.apSW('user', getUser),
-    RM.ichainFirst(() => RM.status(Status.OK)),
-    RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
-    RM.ichainFirst(() => RM.closeHeaders()),
-    RM.ichainMiddlewareKW(sendPage),
-    RM.orElseMiddlewareK(ServiceUnavailable),
-  )
+const sendPage = flow(createPage, M.send)
+
+export const preprint = flow(
+  RM.fromReaderTaskEitherK(fetchDetails),
+  RM.apSW('user', getUser),
+  RM.ichainFirst(() => RM.status(Status.OK)),
+  RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),
+  RM.ichainFirst(() => RM.closeHeaders()),
+  RM.ichainMiddlewareKW(sendPage),
+  RM.orElseMiddlewareK(ServiceUnavailable),
+)
 
 type Details = {
   preprint: DoiData
   reviews: ReadonlyArray<ZenodoRecord>
   user: O.Option<User>
 }
-
-const sendPage = flow(createPage, M.send)
 
 function createPage({ preprint, reviews, user }: Details) {
   return page(
