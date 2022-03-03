@@ -4,13 +4,7 @@
     "lib": ["dom"],
     "isolatedModules": true,
     "noEmit": true,
-    "rootDirs": [
-      "assets",
-      "src"
-    ]
+    "rootDirs": ["assets", "src"]
   },
-  "include": [
-    "assets/**/*",
-    "src/**/*"
-  ]
+  "include": ["assets/**/*", "src/**/*"]
 }

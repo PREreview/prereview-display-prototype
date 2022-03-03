@@ -1,7 +1,8 @@
 import { DoiD } from 'doi-ts'
 import { parseDate } from 'fp-ts-std/Date'
 import * as O from 'fp-ts/Option'
-import * as RA from 'fp-ts/ReadonlyArray'
+import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import { intercalate } from 'fp-ts/Semigroup'
 import { pipe } from 'fp-ts/function'
 import { OrcidUrlD } from 'orcid-ts'
 import * as d from './decoder'
@@ -38,5 +39,5 @@ export function getFirstPublishedDate(doi: CrossrefDoi): O.Option<Date> {
 }
 
 function getDate(dateParts: DateParts): O.Option<Date> {
-  return pipe(dateParts, RA.map(String), S.join('-'), parseDate)
+  return pipe(dateParts, RNEA.foldMap(pipe(S.Semigroup, intercalate('-')))(String), parseDate)
 }
