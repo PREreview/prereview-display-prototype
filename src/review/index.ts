@@ -4,6 +4,7 @@ import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import { and } from 'fp-ts/Refinement'
+import { intercalate } from 'fp-ts/Semigroup'
 import * as B from 'fp-ts/boolean'
 import { constant, flow, pipe } from 'fp-ts/function'
 import { MediaType, Status } from 'hyper-ts'
@@ -101,7 +102,7 @@ function displayAuthor(author: Author): string {
 }
 
 const displayNoAuthors = constant('Unknown')
-const displayAuthors = flow(RNEA.map(displayAuthor), S.join(', '))
+const displayAuthors = RNEA.foldMap(pipe(S.Semigroup, intercalate(', ')))(displayAuthor)
 const maybeDisplayAuthors = RA.match(displayNoAuthors, displayAuthors)
 
 function createPage({ preprint, review, user }: Details) {

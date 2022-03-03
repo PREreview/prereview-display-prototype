@@ -1,7 +1,7 @@
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import { constant, flow, pipe } from 'fp-ts/function'
+import { constant, pipe } from 'fp-ts/function'
 import * as orcid from 'orcid-ts'
 import { Author } from '../fetch-doi'
 import * as S from '../string'
@@ -19,6 +19,6 @@ function displayAuthor(author: Author): string {
 
 const displayNoAuthors = constant('Unknown')
 
-export const displayAuthors = flow(RNEA.map(displayAuthor), S.join(', '))
+export const displayAuthors = RNEA.foldMap(S.Semigroup)(displayAuthor)
 
 export const maybeDisplayAuthors = RA.match(displayNoAuthors, displayAuthors)

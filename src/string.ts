@@ -7,7 +7,6 @@ import * as d from './decoder'
 export * from 'fp-ts/string'
 
 export { prepend, append } from 'fp-ts-std/String'
-export { join } from 'fp-ts-std/ReadonlyArray'
 
 export type NonEmptyString = string & NonEmptyStringBrand
 

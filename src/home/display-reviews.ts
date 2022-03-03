@@ -2,7 +2,8 @@ import { format } from 'fp-ts-routing'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
-import { constant, flow, pipe } from 'fp-ts/function'
+import { intercalate } from 'fp-ts/Semigroup'
+import { constant, pipe } from 'fp-ts/function'
 import { DoiData } from '../fetch-doi'
 import { preprintMatch } from '../router'
 import * as S from '../string'
@@ -20,8 +21,7 @@ function displayReview({ preprint, review }: Review) {
         <h3 class="mb-0">${preprint.title}</h3>
         <p>Reviewed by ${pipe(
           review.metadata.creators,
-          RNEA.map(creator => creator.name),
-          S.join(', '),
+          RNEA.foldMap(pipe(S.Semigroup, intercalate(', ')))(creator => creator.name),
         )}
         <p><a href="${format(preprintMatch.formatter, { doi: preprint.doi })}" class="stretched-link">Read reviews</a>
       </div>
@@ -36,5 +36,5 @@ function displayReview({ preprint, review }: Review) {
 }
 
 const displayNoReviews = constant('<p>No reviews yet.</p>')
-const displayReviews = flow(RNEA.map(displayReview), S.join(S.empty))
+const displayReviews = RNEA.foldMap(S.Semigroup)(displayReview)
 export const maybeDisplayReviews = RA.match(displayNoReviews, displayReviews)

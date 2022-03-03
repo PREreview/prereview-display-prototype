@@ -3,6 +3,7 @@ import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
+import { intercalate } from 'fp-ts/Semigroup'
 import { constant, flow, pipe } from 'fp-ts/function'
 import { MediaType, Status } from 'hyper-ts'
 import * as M from 'hyper-ts/lib/Middleware'
@@ -32,8 +33,7 @@ function displayResult(result: EuropePmcRecord) {
 }
 
 const displayResults = flow(
-  RNEA.map(displayResult),
-  S.join(S.empty),
+  RNEA.foldMap(S.Monoid)(displayResult),
   S.prepend('<div class="list-group">'),
   S.append('</div>'),
 )
@@ -44,7 +44,7 @@ function displayAuthor(author: Author): string {
   return 'firstName' in author ? `${author.firstName} ${author.lastName}` : author.collectiveName
 }
 
-const displayAuthors = flow(RNEA.map(displayAuthor), S.join(', '))
+const displayAuthors = RNEA.foldMap(pipe(S.Semigroup, intercalate(', ')))(displayAuthor)
 
 function createPage({ query, results, user }: Details) {
   return page(

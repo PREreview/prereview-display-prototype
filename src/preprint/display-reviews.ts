@@ -3,7 +3,7 @@ import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
 import * as B from 'fp-ts/boolean'
-import { constant, flow, pipe } from 'fp-ts/function'
+import { constant, pipe } from 'fp-ts/function'
 import textClip from 'text-clipper'
 import { reviewMatch } from '../router'
 import * as S from '../string'
@@ -59,6 +59,6 @@ function displayReview(review: ZenodoRecord) {
 
 const displayNoReviews = constant(`<p>No reviews yet.</p>`)
 
-const displayReviews = flow(RNEA.map(displayReview), S.join(S.empty))
+const displayReviews = RNEA.foldMap(S.Semigroup)(displayReview)
 
 export const maybeDisplayReviews = RA.match(displayNoReviews, displayReviews)

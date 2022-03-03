@@ -36,8 +36,7 @@ const showError: (error: d.DecodeError) => RNEA.ReadonlyNonEmptyArray<string> = 
 const toListItem = S.prepend('<li>')
 
 const toList: (items: RNEA.ReadonlyNonEmptyArray<string>) => string = flow(
-  RNEA.map(toListItem),
-  S.join(S.empty),
+  RNEA.foldMap(S.Monoid)(toListItem),
   S.prepend('<ol>'),
   S.append('</ol>'),
 )
