@@ -2,7 +2,7 @@ import { BodyError, getJson } from 'fetch-fp-ts'
 import { Json } from 'fp-ts/Json'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { flow, pipe } from 'fp-ts/function'
-import * as l from 'logger-ts'
+import * as l from 'logger-fp-ts'
 import * as d from './decoder'
 import { errorToJson } from './errors'
 

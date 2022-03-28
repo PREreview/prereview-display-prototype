@@ -1,4 +1,5 @@
 import { createTerminus } from '@godaddy/terminus'
+import { SystemClock } from 'clock-ts'
 import rTracer from 'cls-rtracer'
 import cookieParser from 'cookie-parser'
 import 'dotenv/config'
@@ -13,7 +14,7 @@ import { absurd, constant, flow, pipe } from 'fp-ts/function'
 import http from 'http'
 import { SessionEnv, inMemorySessionStore } from 'hyper-ts-session'
 import { toRequestHandler } from 'hyper-ts/lib/express'
-import * as LE from 'logger-ts'
+import * as LE from 'logger-fp-ts'
 import * as L from 'logging-ts/lib/IO'
 import nodeFetch from 'node-fetch'
 import path from 'path'
@@ -35,7 +36,7 @@ const withRequestId = (entry: LE.LogEntry) =>
     O.match(constant(entry), requestId => ({ ...entry, payload: { ...entry.payload, requestId } })),
   )
 
-const logger = pipe(C.log, L.contramap(LE.withColor(LE.showEntry.show)))
+const logger = pipe(C.log, LE.withShow(LE.getColoredShow(LE.ShowLogEntry)))
 
 const env = pipe(
   process.env,
@@ -54,6 +55,7 @@ const env = pipe(
 )()
 
 const deps: AppEnv = {
+  clock: SystemClock,
   fetch: nodeFetch as any,
   logger: pipe(logger, L.contramap(withRequestId)),
   secret: 'something secret',
