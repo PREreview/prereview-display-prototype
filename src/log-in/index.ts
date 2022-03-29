@@ -16,8 +16,7 @@ const newUser: IO.IO<User> = () => ({
 })
 
 export const logIn = pipe(
-  newUser,
-  RM.fromIO,
+  RM.rightIO(newUser),
   RM.chain(flow(UserC.encode, saveSession)),
   RM.ichainFirstW(() => redirectToReferer),
   RM.ichain(sessionId => RM.cookie('session', sessionId, { signed: true })),

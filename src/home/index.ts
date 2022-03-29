@@ -59,9 +59,8 @@ ${header(user)}
 const sendPage = flow(createPage, M.send)
 
 export const home = pipe(
-  fetchDetails,
-  RT.bindTo('reviews'),
-  RM.rightReaderTask,
+  RM.rightReaderTask(fetchDetails),
+  RM.bindTo('reviews'),
   RM.apSW('user', getUser),
   RM.ichainFirst(() => RM.status(Status.OK)),
   RM.ichainFirst(() => RM.contentType(MediaType.textHTML)),

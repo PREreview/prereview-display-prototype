@@ -29,11 +29,13 @@ type Details = {
 const fetchDetails = flow(
   getRecord,
   RTE.bindTo('review'),
-  RTE.bindW('preprint', ({ review }) =>
-    pipe(
-      review.metadata.related_identifiers,
-      RA.findFirst(pipe(hasScheme('doi'), and(hasRelation('reviews')))),
-      RTE.fromOption(() => new Error('Does not review')),
+  RTE.bindW(
+    'preprint',
+    flow(
+      ({ review }) => review.metadata.related_identifiers,
+      RTE.fromOptionK(() => new Error('Does not review'))(
+        RA.findFirst(pipe(hasScheme('doi'), and(hasRelation('reviews')))),
+      ),
       RTE.chain(flow(foo => foo.identifier, fetchDoi)),
     ),
   ),
