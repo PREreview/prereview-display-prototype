@@ -1,7 +1,9 @@
+import { Request, hasStatus, send } from 'fetch-fp-ts'
 import * as RTE from 'fp-ts/ReaderTaskEither'
-import { constant, flow } from 'fp-ts/function'
+import { constant, flow, identity } from 'fp-ts/function'
+import { StatusCodes } from 'http-status-codes'
+import { URLSearchParams } from 'url'
 import { DoiD } from '../packages/doi-ts'
-import { ensureSuccess, getRequest, send } from '../packages/fetch-fp-ts'
 import { withQuery } from '../packages/url-ts'
 import { decode, logError } from './api'
 import * as d from './decoder'
@@ -41,9 +43,9 @@ const search = flow(
       resultType: 'core',
     }),
   withQuery(`https://www.ebi.ac.uk/europepmc/webservices/rest/search`),
-  getRequest,
+  Request('GET'),
   send,
-  RTE.chainEitherKW(ensureSuccess),
+  RTE.filterOrElseW(hasStatus(StatusCodes.OK), identity),
   RTE.orElseFirstW(logError('Unable to search Europe PMC')),
 )
 

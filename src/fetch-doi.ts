@@ -1,9 +1,10 @@
 import * as DOI from 'doi-ts'
-import { ensureSuccess, getRequest, send, withHeader } from 'fetch-fp-ts'
+import { Request, hasStatus, send, setHeader } from 'fetch-fp-ts'
 import * as O from 'fp-ts/Option'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as RA from 'fp-ts/ReadonlyArray'
-import { constant, flow, pipe } from 'fp-ts/function'
+import { constant, flow, identity, pipe } from 'fp-ts/function'
+import { StatusCodes } from 'http-status-codes'
 import * as orcid from 'orcid-ts'
 import { decode, logError } from './api'
 import { CrossrefDoi, CrossrefDoiD, getFirstPublishedDate } from './crossref'
@@ -27,10 +28,10 @@ const DoiDataD = D.union(CrossrefDoiDataD, DataciteDoiDataD)
 
 const fetchDoiResponse = flow(
   DOI.toUrl,
-  getRequest,
-  withHeader('Accept', 'application/vnd.datacite.datacite+json, application/json'),
+  Request('GET'),
+  setHeader('Accept', 'application/vnd.datacite.datacite+json, application/json'),
   send,
-  RTE.chainEitherKW(ensureSuccess),
+  RTE.filterOrElseW(hasStatus(StatusCodes.OK), identity),
   RTE.orElseFirstW(logError('Unable to fetch DOI data')),
 )
 

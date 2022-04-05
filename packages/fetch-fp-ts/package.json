@@ -1,8 +1,0 @@
-{
-  "name": "fetch-fp-ts",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "peerDependencies": {
-    "fp-ts": "^2.11.8"
-  }
-}

@@ -16,7 +16,7 @@ import { SessionEnv, inMemorySessionStore } from 'hyper-ts-session'
 import { toRequestHandler } from 'hyper-ts/lib/express'
 import * as LE from 'logger-fp-ts'
 import * as L from 'logging-ts/lib/IO'
-import nodeFetch from 'node-fetch'
+import fetch from 'node-fetch'
 import path from 'path'
 import { appMiddleware } from './app'
 import * as d from './decoder'
@@ -56,7 +56,7 @@ const env = pipe(
 
 const deps: AppEnv = {
   clock: SystemClock,
-  fetch: nodeFetch as any,
+  fetch,
   logger: pipe(logger, L.contramap(withRequestId)),
   secret: 'something secret',
   sessionStore: inMemorySessionStore(),
