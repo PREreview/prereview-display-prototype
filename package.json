@@ -23,8 +23,7 @@
         "hyper-ts-session",
         "logger-ts",
         "orcid-ts",
-        "url-ts",
-        "uuid-ts"
+        "url-ts"
       ],
       "scopeHoist": false,
       "source": "src/index.ts"

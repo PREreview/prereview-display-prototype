@@ -6,7 +6,7 @@
     "cookie": "^0.4.2",
     "cookie-parser": "^1.4.6",
     "io-ts": "^2.2.16",
-    "uuid-ts": "*"
+    "uuid-ts": "^0.1.0"
   },
   "peerDependencies": {
     "fp-ts": "^2.11.8",
