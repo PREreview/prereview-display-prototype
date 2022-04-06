@@ -1,6 +1,6 @@
+import { Doi } from 'doi-ts'
 import { format } from 'fp-ts-routing'
 import * as O from 'fp-ts/Option'
-import { Doi } from '../../packages/doi-ts'
 import { logInMatch, publishRapidReviewMatch, publishReviewMatch } from '../router'
 import { User } from '../user'
 

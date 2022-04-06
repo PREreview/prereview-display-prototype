@@ -1,6 +1,8 @@
-import { DoiD } from 'doi-ts'
+import { isDoi } from 'doi-ts'
 import * as d from '../decoder'
 import { NonEmptyStringD } from '../string'
+
+const DoiD = d.fromRefinement(isDoi, 'DOI')
 
 const OptionsD = d.literal('Yes', 'No', 'N/A', 'Unsure')
 

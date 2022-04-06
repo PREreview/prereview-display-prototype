@@ -1,12 +1,14 @@
+import { isDoi } from 'doi-ts'
 import { Request, hasStatus, send } from 'fetch-fp-ts'
 import * as RTE from 'fp-ts/ReaderTaskEither'
-import { constant, flow, identity } from 'fp-ts/function'
+import { constant, flow, identity, pipe } from 'fp-ts/function'
 import { StatusCodes } from 'http-status-codes'
 import { URLSearchParams } from 'url'
-import { DoiD } from '../packages/doi-ts'
 import { withQuery } from '../packages/url-ts'
 import { decode, logError } from './api'
 import * as d from './decoder'
+
+const DoiD = d.fromRefinement(isDoi, 'DOI')
 
 const AuthorD = d.union(
   d.struct({

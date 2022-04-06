@@ -1,4 +1,4 @@
-import { DoiC, DoiD } from 'doi-ts'
+import { isDoi } from 'doi-ts'
 import { FetchEnv, Request, hasStatus, send, setBody, setHeader } from 'fetch-fp-ts'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { constant, flow, identity, pipe } from 'fp-ts/function'
@@ -11,6 +11,9 @@ import * as c from './codec'
 import * as d from './decoder'
 import { PositiveInt, PositiveIntD } from './number'
 import { NonEmptyStringC } from './string'
+
+const DoiD = d.fromRefinement(isDoi, 'DOI')
+const DoiC = c.fromDecoder(DoiD)
 
 export type ZenodoEnv = {
   zenodoApiKey: string

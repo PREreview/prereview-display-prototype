@@ -1,8 +1,10 @@
-import { DoiD } from 'doi-ts'
+import { isDoi } from 'doi-ts'
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { flow, pipe } from 'fp-ts/function'
 import * as d from './decoder'
+
+const DoiD = d.fromRefinement(isDoi, 'DOI')
 
 const DataciteDescriptionD = pipe(
   {

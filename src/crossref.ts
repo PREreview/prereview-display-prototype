@@ -1,4 +1,4 @@
-import { DoiD } from 'doi-ts'
+import { isDoi } from 'doi-ts'
 import { parseDate } from 'fp-ts-std/Date'
 import * as O from 'fp-ts/Option'
 import * as RNEA from 'fp-ts/ReadonlyNonEmptyArray'
@@ -8,6 +8,7 @@ import { OrcidUrlD } from 'orcid-ts'
 import * as d from './decoder'
 import * as S from './string'
 
+const DoiD = d.fromRefinement(isDoi, 'DOI')
 const DatePartsD = d.tuple(d.number, d.number, d.number)
 
 export const CrossrefDoiD = d.struct({

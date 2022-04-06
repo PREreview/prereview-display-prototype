@@ -1,9 +1,10 @@
-import { DoiC } from 'doi-ts'
+import { isDoi } from 'doi-ts'
 import * as R from 'fp-ts-routing'
 import * as M from 'fp-ts/Monoid'
 import * as O from 'fp-ts/Option'
 import { pipe, tuple } from 'fp-ts/function'
 import * as c from 'io-ts/Codec'
+import * as d from 'io-ts/Decoder'
 import { home } from './home'
 import { logIn } from './log-in'
 import { logOut } from './log-out'
@@ -13,6 +14,8 @@ import { publishRapidReview } from './publish-rapid-review'
 import { publishReview } from './publish-review'
 import { review } from './review'
 import { search } from './search'
+
+const DoiC = c.fromDecoder(d.fromRefinement(isDoi, 'DOI'))
 
 const singleton = <K extends string, V>(k: K, v: V): { [_ in K]: V } => ({ [k as any]: v } as any)
 

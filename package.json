@@ -16,8 +16,6 @@
     "server": {
       "context": "node",
       "includeNodeModules": [
-        "doi-ts",
-        "fetch-fp-ts",
         "http-methods-ts",
         "hyper-ts-routing",
         "hyper-ts-session",
@@ -38,7 +36,7 @@
     "clock-ts": "^0.1.0",
     "cls-rtracer": "^2.6.0",
     "cookie-parser": "^1.4.6",
-    "doi-ts": "*",
+    "doi-ts": "^0.1.1",
     "dotenv": "^14.2.0",
     "express": "^4.17.2",
     "fetch-fp-ts": "^0.1.2",
